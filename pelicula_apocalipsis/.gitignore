@@ -1,0 +1,6 @@
+*.onnx
+*.pth
+voices-v1.0.bin
+_audio.wav
+prueba.mp4
+modelos/
