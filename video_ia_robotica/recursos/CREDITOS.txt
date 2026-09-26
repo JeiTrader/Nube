@@ -1,4 +1,8 @@
-Recursos de terceros:
+Recursos:
+- Imágenes (mano, pizarra, robot, cerebro, fabrica, cirugia, trading, handshake, ciudad):
+  generadas con IA en Canva y ampliadas x4 con Real-ESRGAN (superres.py).
+- mano_rgba.png: recorte de mano.png con preparar_mano.py.
 - PermanentMarker-Regular.ttf: Google Fonts (Apache License 2.0)
-- mano.svg / mano.png: Twemoji (CC-BY 4.0), https://github.com/jdecked/twemoji
+- Kalam-Bold.ttf: Google Fonts (SIL Open Font License)
+- Real-ESRGAN (BSD-3-Clause), pesos RealESRGAN_x4plus.pth (no incluidos)
 - Voz: Kokoro TTS (Apache 2.0), voz em_alex
