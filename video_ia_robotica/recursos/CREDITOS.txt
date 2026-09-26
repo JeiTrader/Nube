@@ -1,0 +1,4 @@
+Recursos de terceros:
+- PermanentMarker-Regular.ttf: Google Fonts (Apache License 2.0)
+- mano.svg / mano.png: Twemoji (CC-BY 4.0), https://github.com/jdecked/twemoji
+- Voz: Kokoro TTS (Apache 2.0), voz em_alex
