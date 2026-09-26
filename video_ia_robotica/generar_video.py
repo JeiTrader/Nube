@@ -118,12 +118,12 @@ class Texto:
         self.x = int(x - w / 2) if centrado else int(x)
         self.y = int(y)
         self.size = size
-        self.dur = 0.3 + 0.045 * len(texto)
+        self.dur = 0.4 + 0.055 * len(texto)
 
     def dibujar(self, cuadro, p, t):
         w = max(1, int(self.img.width * p))
         cuadro.alpha_composite(self.img.crop((0, 0, w, self.img.height)), (self.x, self.y))
-        return (self.x + w, self.y + self.size * (0.62 + 0.22 * math.sin(t * 36)))
+        return (self.x + w, self.y + self.size * (0.6 + 0.1 * math.sin(t * 13)))
 
     def fijar(self, base):
         base.alpha_composite(self.img, (self.x, self.y))
@@ -152,9 +152,9 @@ class Foto:
         self.foto = foto.convert("RGBA")
         self.boceto = boceto_lapiz(foto)
         self.x, self.y, self.w, self.h = x, y, w, h
-        self.dur = 3.6
+        self.dur = 5.5
         # recorrido en zigzag que sigue la mano
-        banda = 70
+        banda = 105
         filas = math.ceil(h / banda)
         self.ruta = []
         for i in range(filas + 1):
@@ -203,7 +203,7 @@ class Foto:
             dm = ImageDraw.Draw(self.mascara)
             n = max(2, int((dist - self.hecho) / 10))
             pts = [self._punto(self.ruta, self.seg, self.hecho + (dist - self.hecho) * k / n) for k in range(n + 1)]
-            dm.line(pts, fill=255, width=110, joint="curve")
+            dm.line(pts, fill=255, width=160, joint="curve")
             self.hecho = dist
         sk = self.boceto.copy()
         sk.putalpha(ImageChops.multiply(self.boceto.getchannel("A"), self.mascara))
@@ -224,7 +224,7 @@ class Revelar:
 
     def __init__(self, foto):
         self.f = foto
-        self.dur = 1.4
+        self.dur = 1.5
 
     def dibujar(self, cuadro, p, t):
         e = p * p * (3 - 2 * p)
@@ -244,7 +244,7 @@ class Linea:
     def __init__(self, x0, x1, y, color=AZUL, grosor=8):
         self.pts = [(x0 + (x1 - x0) * k / 40, y + 6 * math.sin(k / 40 * math.pi)) for k in range(41)]
         self.color, self.grosor = color, grosor
-        self.dur = 0.8
+        self.dur = 1.2
 
     def dibujar(self, cuadro, p, t):
         n = max(2, int(len(self.pts) * p))
@@ -303,10 +303,10 @@ def programar(elems, t0):
         if isinstance(e, Revelar):
             plan.append((e, fin_prev, e.dur))
             continue
-        inicio = fin_prev + 0.15 if junto else t
+        inicio = fin_prev + 0.3 if junto else t
         plan.append((e, inicio, e.dur))
         fin_prev = inicio + e.dur
-        t = fin_prev + 0.3
+        t = fin_prev + 0.4
     return plan, max(ti + d for _, ti, d in plan)
 
 
@@ -320,7 +320,7 @@ def narrar():
     k = Kokoro(os.path.join(KOKORO_DIR, "kokoro-v1.0.onnx"), os.path.join(KOKORO_DIR, "voices-v1.0.bin"))
     out = []
     for esc in ESCENAS:
-        s, sr = k.create(esc["voz"], voice=VOZ, speed=1.0, lang="es")
+        s, sr = k.create(esc["voz"], voice=VOZ, speed=0.93, lang="es")
         out.append(np.asarray(s, dtype=np.float32))
     return out
 
@@ -468,15 +468,18 @@ def main():
                     punta = ((punta[0] - W / 2) * z + W / 2, (punta[1] - H / 2) * z + H / 2)
 
             if punta is not None and t >= TRANSICION:
+                # seguimiento suave: sin saltos ni temblores
                 dist = math.hypot(punta[0] - pos[0], punta[1] - pos[1])
-                if dist > 30:
-                    pos[0] += (punta[0] - pos[0]) * 0.5
-                    pos[1] += (punta[1] - pos[1]) * 0.5
-                else:
-                    pos = [punta[0], punta[1]]
+                k = 0.22 if dist > 60 else 0.55
+                pos[0] += (punta[0] - pos[0]) * k
+                pos[1] += (punta[1] - pos[1]) * k
             else:
-                pos[0] += (W + 400 - pos[0]) * 0.15
-                pos[1] += (H + 500 - pos[1]) * 0.15
+                prox = [ti for e, ti, d in plan if e.mano and ti > t]
+                if prox and prox[0] - t < 1.2 and t >= TRANSICION:
+                    pass  # pausa corta: la mano espera sobre la pizarra
+                else:
+                    pos[0] += (W + 300 - pos[0]) * 0.07
+                    pos[1] += (H + 450 - pos[1]) * 0.07
             hx, hy = int(pos[0] - off[0]), int(pos[1] - off[1])
             if hx < W and hy < H:
                 cuadro.paste((0, 0, 0, 255), (hx + 28, hy + 34), sombra)

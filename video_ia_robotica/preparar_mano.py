@@ -1,4 +1,4 @@
-"""Recorta la mano (fondo blanco -> transparente) y alarga el antebrazo.
+"""Recorta la mano (fondo blanco -> transparente) y difumina el antebrazo.
 
 Uso: python3 preparar_mano.py   (lee recursos/mano.png, escribe recursos/mano_rgba.png)
 La punta del marcador queda en PUNTA = (135, 416).
@@ -20,15 +20,14 @@ A = A.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.3))
 mano = im.convert("RGBA")
 mano.putalpha(A)
 
-# Alargar el antebrazo repitiendo la franja del borde en la dirección del brazo
-al = np.asarray(mano)[..., 3] > 128
-c = [np.nonzero(al[:, x])[0].mean() for x in (650, 790)]
-pend = (c[1] - c[0]) / 140
-grande = Image.new("RGBA", (2600, 2000), (0, 0, 0, 0))
-banda = mano.crop((784, 0, 800, 800))
-paso = 4
-for k in range(400, 0, -1):
-    grande.alpha_composite(banda, (784 + paso * k, int(round(paso * k * pend))))
-grande.alpha_composite(mano, (0, 0))
-grande.crop((0, 0) + grande.getbbox()[2:]).save("recursos/mano_rgba.png")
-print("ok", pend)
+# Difuminar el antebrazo después de la muñeca (sin brazo largo artificial)
+d = np.array([1.0, 0.65]) / np.hypot(1.0, 0.65)
+yy, xx = np.mgrid[0:H, 0:W]
+proy = xx * d[0] + yy * d[1]
+s0 = 590 * d[0] + 430 * d[1]
+fade = np.clip(1 - (proy - s0) / 170.0, 0, 1) ** 1.5
+alfa = np.asarray(mano.getchannel("A"), dtype=np.float32) * fade
+mano.putalpha(Image.fromarray(alfa.astype(np.uint8)))
+mano = mano.crop(mano.getbbox()[:2] and (0, 0) + mano.getbbox()[2:])
+mano.save("recursos/mano_rgba.png")
+print("ok", mano.size)
