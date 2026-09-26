@@ -1,0 +1,5 @@
+Recursos:
+- Imágenes de escenas: generadas con IA en Canva, ampliadas x16 con Real-ESRGAN (superres.py, 2 pasadas).
+- Cinzel.ttf y Lora.ttf: Google Fonts (SIL Open Font License).
+- Voz: Kokoro TTS (Apache 2.0), voz em_alex.
+- Música, viento y truenos: generados por código en generar_pelicula.py.
