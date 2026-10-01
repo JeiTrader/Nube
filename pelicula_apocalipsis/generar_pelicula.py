@@ -43,7 +43,7 @@ ORO = (226, 186, 104)
 #      pan=desplazamiento de paralaje del primer plano (px), temblor=px
 ESCENAS = [
     dict(img="01_patmos", tono="vela", musica="misterio",
-         cam=dict(z=(1.0, 1.13), c=((0.5, 0.5), (0.46, 0.45)), dolly=0.07, pan=(-40, 0)),
+         cam=dict(z=(1.0, 1.12), c=((0.5, 0.45), (0.55, 0.42)), dolly=0.07, pan=(-40, 0)),
          fx=["polvo"], cap=("PATMOS", "Apocalipsis 1:9-11"),
          voz=["En la isla de Patmos, desterrado por su fe, el apóstol Juan recibió una visión.",
               "La revelación de las cosas que habían de suceder al final de los tiempos."]),
@@ -53,13 +53,13 @@ ESCENAS = [
          voz=["Vi en la mano del que estaba sentado en el trono un libro sellado con siete sellos.",
               "Y nadie era digno de abrirlo... sino el Cordero."]),
     dict(img="03_caballo_blanco", tono="epico", musica="jinetes", sfx=["campana", "galope"],
-         cam=dict(z=(1.18, 1.02), c=((0.52, 0.45), (0.5, 0.5)), dolly=0.1, pan=(-70, 0), temblor=2),
+         cam=dict(z=(1.12, 1.0), c=((0.5, 0.36), (0.5, 0.4)), dolly=0.1, pan=(-70, 0), temblor=2),
          fx=["polvo", "niebla"], cap=("EL PRIMER SELLO", "Apocalipsis 6:2"),
          voz=["Cuando el Cordero abrió el primer sello, miré, y he aquí un caballo blanco.",
               "El que lo montaba tenía un arco, y le fue dada una corona.",
               "Y salió venciendo, y para vencer."]),
     dict(img="04_caballo_rojo", tono="sangre", musica="jinetes", sfx=["campana", "galope", "fuego"],
-         cam=dict(z=(1.0, 1.16), c=((0.5, 0.5), (0.52, 0.42)), dolly=0.11, pan=(60, 0), temblor=2),
+         cam=dict(z=(1.0, 1.16), c=((0.5, 0.4), (0.52, 0.38)), dolly=0.11, pan=(60, 0), temblor=2),
          fx=["brasas", "humo", "fuego"], cap=("EL SEGUNDO SELLO", "Apocalipsis 6:3-4"),
          voz=["Y salió otro caballo, bermejo.",
               "Al que lo montaba le fue dado poder de quitar la paz de la tierra, y que se mataran unos a otros.",
@@ -221,16 +221,15 @@ class Escena:
         if tem:
             cx += tem / W * (math.sin(t * 13.1) + 0.6 * math.sin(t * 29.7 + 1)) * 0.5
             cy += tem / H * (math.sin(t * 11.3 + 2) + 0.6 * math.sin(t * 23.9)) * 0.5
+        # la cámara encuadra sólo la franja visible 2.39:1 (entre las barras)
+        vis = (H - 2 * BARRA) / H
         cw = self.Ws / z
-        ch = cw * H / W
-        if ch > self.Hs / z * 1.0001:
-            ch = self.Hs / z
-            cw = ch * W / H
+        ch = cw * H * vis / W
         Cx = min(max(cw / 2, cx * self.Ws), self.Ws - cw / 2)
         Cy = min(max(ch / 2, cy * self.Hs), self.Hs - ch / 2)
         h2, w2 = H // 2, W // 2
         gx = (np.arange(w2, dtype=np.float32) + 0.5) / w2 - 0.5
-        gy = (np.arange(h2, dtype=np.float32) + 0.5) / h2 - 0.5
+        gy = ((np.arange(h2, dtype=np.float32) + 0.5) / h2 - 0.5) / vis
         GX, GY = np.meshgrid(gx, gy)
         bx = Cx + GX * cw
         by = Cy + GY * ch
